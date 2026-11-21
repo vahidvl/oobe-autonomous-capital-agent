@@ -1,24 +1,40 @@
 # OOBE Autonomous Capital Agent (Solana)
 
-Production-grade **Autonomous Capital Agent on Solana** built for the **OOBE Protocol / Steve Capital Challenge** on Superteam Earn.
+Autonomous Capital Agent on Solana with a deny-by-default risk policy engine, crash-safe hash-chained state store, Jupiter `swap/v1` quote adapter, Solana JSON-RPC client with retries/failover, and OOBE SAP MCP bridge.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-  CLI["CLI / Agent Loop"] --> CA["Capital Allocator"]
-  CA --> PE["Risk Policy Engine (Deny-by-Default)"]
-  PE --> JUP["Jupiter v6 Quote Adapter"]
-  PE --> RPC["Solana JSON-RPC Client"]
-  CA --> PT["Portfolio & Yield Tracker"]
+  CLI["CLI (dry-run / quote / rpc-health)"] --> CFG["loadConfig()"]
+  CLI --> CA["computeRebalancePlan()"]
+  CLI --> EX["SwapExecutor (prepare / execute)"]
+  EX --> JUP["JupiterQuoteClient (swap/v1)"]
+  EX --> PE["evaluateTradePolicy()"]
+  EX --> PT["PortfolioTracker"]
+  PT --> SS["RiskStateStore (JSONL + SHA-256)"]
+  CLI --> RPC["SolanaRpcClient (retries + failover)"]
+  CLI -.-> SAP["SapMcpClient (OOBE SAP MCP)"]
 ```
 
-## Core Modules
-- **Risk Policy Engine (`src/risk/policyEngine.ts`):** Deny-by-default guardrails enforcing max per-trade allocation (`bps`), max daily drawdown (`bps`), allowlisted token mints, slippage caps, and trade cooldowns.
-- **Capital Allocator (`src/agent/capitalAllocator.ts`):** Deterministic target-weight rebalancing and yield-allocation planner with exact `bigint` lamport/token math.
-- **Portfolio & Yield Tracker (`src/state/portfolioTracker.ts`):** Tracks balances, realized/unrealized PnL, drawdown, and immutable audit log entries.
-- **Solana JSON-RPC Client (`src/adapters/solanaRpc.ts`):** Native `fetch` RPC client (`getHealth`, `getSlot`, `getBalance`, `getLatestBlockhash`) with `AbortController` timeouts.
-- **Jupiter Quote Adapter (`src/adapters/jupiterQuote.ts`):** Live Jupiter v6 quote integration with structured error handling.
+## Risk Semantics
+
+| Control | Behavior |
+|---|---|
+| **Non-finite inputs** | Fails closed (`DENIED`) on any `NaN` or `Infinity` in intent, snapshot, or policy |
+| **Allocation cap** | Exact cross-multiplication (`amountInUsd * 10000 > maxTradeAllocationBps * totalValueUsd`) |
+| **Daily drawdown** | Flow-adjusted high-water mark; resets at UTC midnight; trips `HALTED` circuit breaker |
+| **Persistence** | Append-only SHA-256 hash-chained `risk-journal.jsonl` + atomic `risk-state.json` |
+| **Quote freshness** | Rejects quotes older than `MAX_QUOTE_AGE_MS` or exceeding `MAX_PRICE_IMPACT_BPS` |
+
+## Evidence Table (Superteam Earn Submission)
+
+| Field | Value |
+|---|---|
+| **Steve Capital Agent URL** | `<PASTE_STEVE_CAPITAL_AGENT_URL>` |
+| **Agent Wallet Address** | `<PASTE_SOLANA_WALLET_ADDRESS>` |
+| **Explorer / Solscan Tx** | `<PASTE_SOLSCAN_TX_LINK>` |
+| **Verified Arena XP** | `<PASTE_ARENA_XP>` |
 
 ## Quickstart
 
@@ -28,5 +44,6 @@ npm install
 npm run typecheck
 npm test
 npm run build
-npm start demo
+npm start -- --help
+npm start -- dry-run
 ```
