@@ -1,6 +1,7 @@
 import type { JupiterQuoteClient, JupiterQuoteResponse } from '../adapters/jupiterQuote.js';
 import { evaluateTradePolicy } from '../risk/policyEngine.js';
 import type { PortfolioTracker } from '../state/portfolioTracker.js';
+import type { RiskStateStore } from '../state/stateStore.js';
 import type { PolicyDecision, RiskPolicy } from '../types.js';
 
 export interface SwapRequest {
@@ -33,7 +34,8 @@ export class SwapExecutor {
   constructor(
     private readonly jupiter: JupiterQuoteClient,
     private readonly policy: RiskPolicy,
-    private readonly tracker: PortfolioTracker
+    private readonly tracker: PortfolioTracker,
+    private readonly store?: RiskStateStore
   ) {}
 
   async prepare(req: SwapRequest, nowMs: number = Date.now()): Promise<PreparedSwap> {
@@ -82,9 +84,14 @@ export class SwapExecutor {
   }
 
   execute(prepared: PreparedSwap, nowMs: number = Date.now()): ExecutionReceipt {
-    const existing = this.receipts.get(prepared.request.idempotencyKey);
-    if (existing) {
-      return existing;
+    const existingMem = this.receipts.get(prepared.request.idempotencyKey);
+    if (existingMem) {
+      return existingMem;
+    }
+    const existingStore = this.store?.getReceipt(prepared.request.idempotencyKey);
+    if (existingStore) {
+      this.receipts.set(prepared.request.idempotencyKey, existingStore);
+      return existingStore;
     }
 
     const receipt: ExecutionReceipt = prepared.decision.approved
@@ -103,6 +110,7 @@ export class SwapExecutor {
         };
 
     this.receipts.set(prepared.request.idempotencyKey, receipt);
+    this.store?.saveReceipt(receipt);
     return receipt;
   }
 }

@@ -91,3 +91,41 @@ test('RiskStateStore detects journal tampering', () => {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
 });
+
+test('RiskStateStore recovers from truncated trailing line and persists idempotency receipts', () => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'oobe-torn-'));
+  try {
+    const store1 = new RiskStateStore(tmpDir);
+    store1.save(
+      'INIT',
+      {
+        dayAnchorUtcMs: 0,
+        anchorValueUsd: 1000,
+        netFlowsUsd: 0,
+        peakValueUsd: 1000,
+        halt: 'ACTIVE',
+        lastTradeTs: null,
+      },
+      1000
+    );
+    store1.saveReceipt({
+      idempotencyKey: 'key-1',
+      status: 'SIMULATED',
+      reason: 'APPROVED_DRY_RUN',
+      quoteOutAmount: '12345',
+      executedAtMs: 2000,
+    });
+
+    // Append a torn/incomplete trailing line
+    const journalPath = path.join(tmpDir, 'risk-journal.jsonl');
+    fs.appendFileSync(journalPath, '{"seq":2,"timestampMs":2000,"event":"TORN', 'utf8');
+
+    const store2 = new RiskStateStore(tmpDir);
+    const loaded = store2.load();
+    assert.ok(loaded !== null);
+    assert.equal(loaded.anchorValueUsd, 1000);
+    assert.equal(store2.getReceipt('key-1')?.quoteOutAmount, '12345');
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

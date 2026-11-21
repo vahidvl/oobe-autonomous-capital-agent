@@ -84,17 +84,30 @@ async function main(): Promise<void> {
       maxDailyDrawdownBps: config.policy.maxDailyDrawdownBps,
     });
     const plan = computeRebalancePlan(tracker.getPositions(), targets);
-    const executor = new SwapExecutor(jupiter, config.policy, tracker);
+    const executor = new SwapExecutor(jupiter, config.policy, tracker, store);
+    const runDate = new Date().toISOString().slice(0, 10);
 
     const previews = [];
     for (const action of plan) {
       if (action.action === 'HOLD') continue;
+      // Skip quoting USDC -> USDC funding leg
+      if (action.action === 'SELL' && action.mint === USDC_MINT) continue;
+
+      const inputMint = action.action === 'SELL' ? action.mint : USDC_MINT;
+      const outputMint = action.action === 'BUY' ? action.mint : USDC_MINT;
+      const absUsd = Math.abs(action.deltaUsd);
+      // Compute real amountUnits in base token units (SOL=9 decimals, USDC=6 decimals)
+      const amountUnits =
+        inputMint === USDC_MINT
+          ? BigInt(Math.max(1, Math.round(absUsd * 1e6))).toString()
+          : BigInt(Math.max(1, Math.round((absUsd / solPriceUsd) * 1e9))).toString();
+
       const prepared = await executor.prepare({
-        idempotencyKey: `dryrun-${action.symbol}-${Date.now()}`,
-        inputMint: action.action === 'SELL' ? action.mint : USDC_MINT,
-        outputMint: action.action === 'BUY' ? action.mint : USDC_MINT,
-        amountUnits: '10000000',
-        amountInUsd: Math.abs(action.deltaUsd),
+        idempotencyKey: `dryrun-${runDate}-${action.action}-${action.symbol}`,
+        inputMint,
+        outputMint,
+        amountUnits,
+        amountInUsd: absUsd,
         slippageBps: config.policy.maxSlippageBps,
       });
       const receipt = executor.execute(prepared);
