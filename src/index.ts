@@ -12,3 +12,5 @@ export * from './execution/swapExecutor.js';
 export * from './math/amm.js';
 export * from './routing/pathfinder.js';
 export * from './adapters/multiHopperClient.js';
+export * from './telemetry/auditExport.js';
+export * from './telemetry/dashboardServer.js';
