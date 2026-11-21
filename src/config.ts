@@ -1,5 +1,24 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { validatePolicy } from './risk/policyEngine.js';
 import type { RiskPolicy } from './types.js';
+
+function loadDotEnvIfPresent(env: NodeJS.ProcessEnv): void {
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith('#')) continue;
+    const eqIdx = line.indexOf('=');
+    if (eqIdx <= 0) continue;
+    const key = line.slice(0, eqIdx).trim();
+    const val = line.slice(eqIdx + 1).trim();
+    if (env[key] === undefined) {
+      env[key] = val;
+    }
+  }
+}
 
 export const SOL_MINT = 'So11111111111111111111111111111111111111112';
 export const USDC_MINT = 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v';
@@ -25,6 +44,7 @@ function parseIntEnv(raw: string | undefined, fallback: number, name: string): n
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
+  loadDotEnvIfPresent(env);
   const rpcRaw = env['SOLANA_RPC_URL']?.trim() || 'https://api.mainnet-beta.solana.com';
   const solanaRpcUrls = rpcRaw
     .split(',')

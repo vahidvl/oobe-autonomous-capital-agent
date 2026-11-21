@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "Autonomous Capital Agent on Solana with deterministic risk policy engine, capital allocator, portfolio tracker, Solana JSON-RPC, and Jupiter quote adapter.",
   "type": "module",
+  "license": "MIT",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "node --test --import tsx tests/adapters.test.ts tests/capitalAllocator.test.ts tests/policyEngine.test.ts tests/stateStore.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck tests/adapters.test.ts tests/capitalAllocator.test.ts tests/policyEngine.test.ts tests/stateStore.test.ts tests/sapMcp.test.ts tests/multiHopper.test.ts",
+    "test": "node --test --import tsx tests/adapters.test.ts tests/capitalAllocator.test.ts tests/policyEngine.test.ts tests/stateStore.test.ts tests/sapMcp.test.ts tests/multiHopper.test.ts",
     "start": "node --import tsx src/cli.ts"
   },
   "engines": {
