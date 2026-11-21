@@ -1,0 +1,22 @@
+{
+  "name": "oobe-autonomous-capital-agent",
+  "version": "1.0.0",
+  "description": "Autonomous Capital Agent on Solana with deterministic risk policy engine, capital allocator, portfolio tracker, Solana JSON-RPC, and Jupiter quote adapter.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test --import tsx tests/**/*.test.ts",
+    "start": "node --import tsx src/cli.ts"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
