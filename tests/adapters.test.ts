@@ -56,6 +56,19 @@ test('JupiterQuoteClient parses quote response and handles HTTP errors', async (
           otherAmountThreshold: '14925000',
           swapMode: 'ExactIn',
           slippageBps: 50,
+          priceImpactPct: '0.5',
+        })
+      );
+    } else if (req.url?.includes('inputMint=MISMATCH')) {
+      res.end(
+        JSON.stringify({
+          inputMint: 'OTHER',
+          inAmount: '100',
+          outputMint: 'USDC',
+          outAmount: '100',
+          otherAmountThreshold: '99',
+          swapMode: 'ExactIn',
+          slippageBps: 50,
           priceImpactPct: '0.01',
         })
       );
@@ -79,6 +92,18 @@ test('JupiterQuoteClient parses quote response and handles HTTP errors', async (
       slippageBps: 50,
     });
     assert.equal(quote.outAmount, '15000000');
+    assert.equal(quote.priceImpactBps, 5000);
+
+    await assert.rejects(
+      () =>
+        client.fetchQuote({
+          inputMint: 'MISMATCH',
+          outputMint: 'USDC',
+          amount: '100',
+          slippageBps: 50,
+        }),
+      /Mint mismatch/
+    );
 
     await assert.rejects(
       () =>

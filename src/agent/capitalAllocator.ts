@@ -35,7 +35,13 @@ export function computeRebalancePlan(
     throw new Error('Total portfolio value must be finite and greater than 0');
   }
 
-  const positionMap = new Map(positions.map((p) => [p.mint, p]));
+  const positionMap = new Map<string, AssetPosition>();
+  for (const p of positions) {
+    if (positionMap.has(p.mint)) {
+      throw new Error(`Duplicate position mint: ${p.mint}`);
+    }
+    positionMap.set(p.mint, p);
+  }
   const actions: RebalanceAction[] = [];
 
   for (const target of targets) {

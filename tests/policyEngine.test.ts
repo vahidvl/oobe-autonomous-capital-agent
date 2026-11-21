@@ -97,6 +97,14 @@ test('evaluateTradePolicy enforces priceImpactBps, maxQuoteAgeMs, and HALTED sta
     { ...snapshot, halt: 'HALTED' }
   );
   assert.equal(halted.approved, false);
+
+  const negDrawdown = evaluateTradePolicy(
+    POLICY,
+    { inputMint: 'SOL', outputMint: 'USDC', amountInUsd: 100, slippageBps: 20, timestampMs: 100_000 },
+    { ...snapshot, dailyDrawdownBps: -1 }
+  );
+  assert.equal(negDrawdown.approved, false);
+  assert.equal(negDrawdown.reason, 'DENIED: negative dailyDrawdownBps');
 });
 
 test('validatePolicy throws on invalid policy fields', () => {

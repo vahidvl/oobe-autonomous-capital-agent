@@ -101,7 +101,13 @@ export function evaluateTradePolicy(
       };
     }
   }
-  if (snapshot.dailyDrawdownBps < 0 || snapshot.dailyDrawdownBps >= policy.maxDailyDrawdownBps) {
+  if (snapshot.dailyDrawdownBps < 0) {
+    return {
+      approved: false,
+      reason: 'DENIED: negative dailyDrawdownBps',
+    };
+  }
+  if (snapshot.dailyDrawdownBps >= policy.maxDailyDrawdownBps) {
     return {
       approved: false,
       reason: `DENIED: daily drawdown ${snapshot.dailyDrawdownBps}bps >= limit ${policy.maxDailyDrawdownBps}bps`,

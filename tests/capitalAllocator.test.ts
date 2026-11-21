@@ -46,6 +46,17 @@ test('computeRebalancePlan rejects duplicate target mints and negative/non-integ
       ]),
     /Invalid targetWeightBps/
   );
+  assert.throws(
+    () =>
+      computeRebalancePlan(
+        [
+          { mint: 'SOL', symbol: 'SOL', balanceUnits: 5n, valueUsd: 500 },
+          { mint: 'SOL', symbol: 'SOL', balanceUnits: 5n, valueUsd: 500 },
+        ],
+        [{ mint: 'SOL', symbol: 'SOL', targetWeightBps: 10000, expectedApyBps: 0 }]
+      ),
+    /Duplicate position mint/
+  );
 });
 
 test('PortfolioTracker tracks drawdown and audit log', () => {

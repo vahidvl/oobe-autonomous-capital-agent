@@ -85,6 +85,11 @@ export class JupiterQuoteClient {
       const raw = (await response.json()) as Record<string, unknown>;
       const inputMint = typeof raw['inputMint'] === 'string' ? raw['inputMint'] : req.inputMint;
       const outputMint = typeof raw['outputMint'] === 'string' ? raw['outputMint'] : req.outputMint;
+      if (inputMint !== req.inputMint || outputMint !== req.outputMint) {
+        throw new JupiterQuoteError(
+          `Mint mismatch in Jupiter quote: expected ${req.inputMint}->${req.outputMint}, got ${inputMint}->${outputMint}`
+        );
+      }
       const inAmount = assertBigIntString(raw['inAmount'], 'inAmount');
       const outAmount = assertBigIntString(raw['outAmount'], 'outAmount');
       const otherAmountThreshold = assertBigIntString(raw['otherAmountThreshold'], 'otherAmountThreshold');
@@ -96,8 +101,8 @@ export class JupiterQuoteClient {
       if (!Number.isFinite(impactNum)) {
         throw new JupiterQuoteError('Invalid Jupiter quote field priceImpactPct: expected finite number');
       }
-      // Jupiter priceImpactPct is expressed as a percentage string (e.g. "0.01" = 0.01% = 1 bps)
-      const priceImpactBps = Math.max(0, Math.round(Math.abs(impactNum) * 100));
+      // Jupiter priceImpactPct is a decimal ratio in [0, 1] (e.g. "0.01" = 1% = 100 bps, "0.5" = 50% = 5000 bps)
+      const priceImpactBps = Math.max(0, Math.round(Math.abs(impactNum) * 10_000));
       const contextSlot = typeof raw['contextSlot'] === 'number' ? raw['contextSlot'] : undefined;
 
       return {
