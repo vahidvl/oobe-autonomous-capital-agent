@@ -1,20 +1,22 @@
 # OOBE Autonomous Capital Agent (Solana)
 
-Autonomous Capital Agent on Solana with a deny-by-default risk policy engine, crash-safe hash-chained state store, Jupiter `swap/v1` quote adapter, Solana JSON-RPC client with retries/failover, and OOBE SAP MCP bridge.
+Autonomous Capital Agent on Solana covering **all 3 bounty tracks** (**OOBE SAP MCP**, **MultiHopper Routing**, and **Ace Data Cloud x402**), backed by a deny-by-default risk policy engine, crash-safe hash-chained state store, and Ed25519-signed audit bundles.
 
-## Architecture
+## 3-Track Architecture
 
 ```mermaid
 flowchart LR
-  CLI["CLI (dry-run / quote / rpc-health)"] --> CFG["loadConfig()"]
+  CLI["CLI (dry-run / audit-export / dashboard)"] --> ACE["AceDataClient (x402 Conviction)"]
   CLI --> CA["computeRebalancePlan()"]
   CLI --> EX["SwapExecutor (prepare / execute)"]
   EX --> JUP["JupiterQuoteClient (swap/v1)"]
+  EX --> MH["MultiHopperClient + Pathfinder"]
   EX --> PE["evaluateTradePolicy()"]
   EX --> PT["PortfolioTracker"]
   PT --> SS["RiskStateStore (JSONL + SHA-256)"]
   CLI --> RPC["SolanaRpcClient (retries + failover)"]
   CLI -.-> SAP["SapMcpClient (OOBE SAP MCP)"]
+  CLI --> AUD["Ed25519 Signed Audit Bundle"]
 ```
 
 ## Risk Semantics
@@ -44,6 +46,7 @@ npm install
 npm run typecheck
 npm test
 npm run build
-npm start -- --help
 npm start -- dry-run
+npm run audit:export
+npm run dashboard
 ```

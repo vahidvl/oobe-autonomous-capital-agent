@@ -8,8 +8,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck tests/adapters.test.ts tests/capitalAllocator.test.ts tests/policyEngine.test.ts tests/stateStore.test.ts tests/sapMcp.test.ts tests/multiHopper.test.ts",
-    "test": "node --test --import tsx tests/adapters.test.ts tests/capitalAllocator.test.ts tests/policyEngine.test.ts tests/stateStore.test.ts tests/sapMcp.test.ts tests/multiHopper.test.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit --target ES2022 --module NodeNext --moduleResolution NodeNext --strict --skipLibCheck tests/adapters.test.ts tests/capitalAllocator.test.ts tests/policyEngine.test.ts tests/stateStore.test.ts tests/sapMcp.test.ts tests/multiHopper.test.ts tests/aceMcp.test.ts tests/e2eThreeTrack.test.ts",
+    "test": "node --test --import tsx tests/adapters.test.ts tests/capitalAllocator.test.ts tests/policyEngine.test.ts tests/stateStore.test.ts tests/sapMcp.test.ts tests/multiHopper.test.ts tests/aceMcp.test.ts tests/e2eThreeTrack.test.ts",
+    "audit:export": "node --import tsx src/cli.ts audit-export",
+    "dashboard": "node --import tsx src/cli.ts dashboard",
     "start": "node --import tsx src/cli.ts"
   },
   "engines": {
