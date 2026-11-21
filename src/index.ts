@@ -7,6 +7,7 @@ export * from './state/stateStore.js';
 export * from './adapters/solanaRpc.js';
 export * from './adapters/jupiterQuote.js';
 export * from './oobe/sapMcp.js';
+export * from './oobe/aceMcp.js';
 export * from './execution/swapExecutor.js';
 export * from './math/amm.js';
 export * from './routing/pathfinder.js';
