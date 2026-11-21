@@ -54,8 +54,8 @@ test('PortfolioTracker tracks drawdown and audit log', () => {
   ]);
   assert.equal(tracker.getDailyDrawdownBps(), 0);
 
-  tracker.updatePositions([{ mint: 'SOL', symbol: 'SOL', balanceUnits: 10n, valueUsd: 950 }], 12345);
+  tracker.markToMarket([{ mint: 'SOL', symbol: 'SOL', balanceUnits: 10n, valueUsd: 950 }], 12345);
   assert.equal(tracker.getDailyDrawdownBps(), 500);
-  assert.equal(tracker.getLastTradeTimestampMs(), 12345);
+  assert.equal(tracker.getLastTradeTimestampMs(), null);
   assert.equal(tracker.getAuditLog().length, 1);
 });
