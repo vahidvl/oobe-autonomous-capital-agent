@@ -1,4 +1,5 @@
 export * from './types.js';
+export * from './config.js';
 export * from './risk/policyEngine.js';
 export * from './agent/capitalAllocator.js';
 export * from './state/portfolioTracker.js';
