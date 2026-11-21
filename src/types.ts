@@ -8,6 +8,10 @@ export interface RiskPolicy {
   readonly maxDailyDrawdownBps: number;
   /** Maximum allowed slippage in basis points (e.g., 50 = 0.50%). */
   readonly maxSlippageBps: number;
+  /** Maximum allowed price impact in basis points (e.g., 100 = 1.00%). */
+  readonly maxPriceImpactBps: number;
+  /** Maximum age of a quote in milliseconds before it is rejected as stale. */
+  readonly maxQuoteAgeMs: number;
   /** Minimum milliseconds between consecutive trades. */
   readonly cooldownMs: number;
 }
@@ -18,6 +22,8 @@ export interface TradeIntent {
   readonly amountInUsd: number;
   readonly slippageBps: number;
   readonly timestampMs: number;
+  readonly priceImpactBps?: number;
+  readonly quoteFetchedAtMs?: number;
 }
 
 export interface PolicyDecision {
@@ -50,6 +56,14 @@ export interface RebalanceAction {
 
 export interface AuditEvent {
   readonly timestampMs: number;
-  readonly type: 'POLICY_CHECK' | 'REBALANCE_PLAN' | 'QUOTE_FETCHED' | 'TRADE_RECORDED';
+  readonly type:
+    | 'POLICY_CHECK'
+    | 'REBALANCE_PLAN'
+    | 'QUOTE_FETCHED'
+    | 'TRADE_RECORDED'
+    | 'MARK_TO_MARKET'
+    | 'FLOW_RECORDED'
+    | 'HALT_TRIGGERED'
+    | 'HALT_CLEARED';
   readonly detail: string;
 }

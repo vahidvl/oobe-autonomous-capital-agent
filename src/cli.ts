@@ -38,6 +38,8 @@ async function main(): Promise<void> {
     maxTradeAllocationBps: 2500, // 25% max per trade
     maxDailyDrawdownBps: 500,    // 5% max daily drawdown
     maxSlippageBps: 50,          // 0.50% max slippage
+    maxPriceImpactBps: 100,      // 1.00% max price impact
+    maxQuoteAgeMs: 15_000,       // 15s max quote age
     cooldownMs: 30_000,
   };
 
